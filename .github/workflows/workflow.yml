@@ -1,0 +1,38 @@
+# Workflow name
+name: CI workflow
+
+# Events that trigger the workflow
+on: 
+  push:
+    branches: [main]  # Triggers on push to main branch
+  pull_request:
+    branches: [main]  # Triggers on PR to main branch
+
+# Groups of jobs to run
+jobs: 
+  build:  # Job named 'build'
+    # Runner specification
+    runs-on: ubuntu-latest  # Uses GitHub-hosted runner
+    container: python:3.9-slim  # Runs in Docker container
+
+    # Sequential steps in the job
+    steps: 
+      # Action: Checks out repository
+      - name: Check Out
+        uses: actions/checkout@v3 
+
+      # Step: Install Python dependencies
+      - name: Install dependencies
+        run: | 
+          python -m pip install --upgrade pip 
+          pip install -r requirements.txt
+
+      # Step: Run linting checks
+      - name: Lint with flake8
+        run: |
+          flake8 service --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 service --count --max-complexity=10 --max-line-length=127 --statistics
+      
+      # Step: Run unit tests
+      - name: Run unit tests with nose
+        run: nosetests -v --with-spec --spec-color --with-coverage --cover-package=app
